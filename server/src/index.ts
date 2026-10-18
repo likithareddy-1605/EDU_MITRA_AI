@@ -36,7 +36,13 @@ app.get('/', (_req, res) => {
   res.json({ name: 'EduMitra AI API', version: '0.1.0' })
 })
 
+app.get('/api', (_req, res) => {
+  res.json({ name: 'EduMitra AI API', version: '0.1.0', status: 'ok' })
+})
+
+// Mounted at /api (for direct /api/* paths) and / (for rewrites that strip prefix)
 app.use('/api', healthRoutes, courseAdvisorRoutes, academicAdvisorRoutes, careerRoutes, authRoutes)
+app.use('/', healthRoutes, courseAdvisorRoutes, academicAdvisorRoutes, careerRoutes, authRoutes)
 
 // --- 404 + error handling ---------------------------------------------------
 app.use((_req, res) => {

@@ -59,9 +59,12 @@ function fallbackSummary(rawCtx: AdvisorContext): string {
     .join(' ')
 }
 
-function fallbackAnswer(rawCtx: AdvisorContext): string {
+function fallbackAnswer(rawCtx: AdvisorContext, isAiSetup = false): string {
   const ctx = normalizeContext(rawCtx)
-  return `(Demo mode — AI not configured.) Based on your records, your improvement areas are ${
+  const prefix = isAiSetup
+    ? '(AI response unavailable — showing rule-based guidance.)'
+    : '(Demo mode — AI not configured.)'
+  return `${prefix} Based on your records, your improvement areas are ${
     ctx.weakSubjects.join(', ') || 'not yet identified'
   }. A reliable approach: revise core concepts in those subjects, solve practice problems daily, and ask your faculty specific doubts. Add more subject marks and goals for more tailored guidance.`
 }
@@ -98,17 +101,19 @@ export async function summarizeProgress(rawCtx: AdvisorContext): Promise<Advisor
   if (!isAiConfigured) return { source: 'fallback', text: fallbackSummary(ctx) }
   try {
     return { source: 'ai', text: await generateText(buildSummaryPrompt(ctx)) }
-  } catch {
+  } catch (err) {
+    console.warn('[academicAdvisor] AI summary failed, using fallback:', err)
     return { source: 'fallback', text: fallbackSummary(ctx) }
   }
 }
 
 export async function answerQuestion(rawCtx: AdvisorContext, question: string): Promise<AdvisorResult> {
   const ctx = normalizeContext(rawCtx)
-  if (!isAiConfigured) return { source: 'fallback', text: fallbackAnswer(ctx) }
+  if (!isAiConfigured) return { source: 'fallback', text: fallbackAnswer(ctx, false) }
   try {
     return { source: 'ai', text: await generateText(buildAnswerPrompt(ctx, question)) }
-  } catch {
-    return { source: 'fallback', text: fallbackAnswer(ctx) }
+  } catch (err) {
+    console.warn('[academicAdvisor] AI answer failed, using fallback:', err)
+    return { source: 'fallback', text: fallbackAnswer(ctx, true) }
   }
 }

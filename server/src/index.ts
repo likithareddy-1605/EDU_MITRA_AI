@@ -4,6 +4,7 @@ import healthRoutes from './routes/health.routes'
 import courseAdvisorRoutes from './routes/courseAdvisor.routes'
 import academicAdvisorRoutes from './routes/academicAdvisor.routes'
 import careerRoutes from './routes/career.routes'
+import authRoutes from './routes/auth.routes'
 import { errorHandler } from './middleware/error.middleware'
 import { env } from './utils/env'
 
@@ -35,7 +36,7 @@ app.get('/', (_req, res) => {
   res.json({ name: 'EduMitra AI API', version: '0.1.0' })
 })
 
-app.use('/api', healthRoutes, courseAdvisorRoutes, academicAdvisorRoutes, careerRoutes)
+app.use('/api', healthRoutes, courseAdvisorRoutes, academicAdvisorRoutes, careerRoutes, authRoutes)
 
 // --- 404 + error handling ---------------------------------------------------
 app.use((_req, res) => {

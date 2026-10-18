@@ -33,3 +33,6 @@ Thumbs.db
 
 # ----- Vite cache -----
 client/.vite/
+
+# ----- Temporary / scratch scripts -----
+scratch/

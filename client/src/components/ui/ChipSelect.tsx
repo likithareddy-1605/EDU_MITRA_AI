@@ -29,7 +29,7 @@ export function ChipSelect({
             onClick={() => onToggle(o.value)}
             aria-pressed={active}
             className={cn(
-              'rounded-full border px-3 py-1.5 text-sm transition-colors',
+              'rounded-full border px-2.5 sm:px-3 py-1 sm:py-1.5 text-xs sm:text-sm font-medium transition-colors touch-manipulation active:scale-[0.98]',
               active
                 ? 'border-blue-600 bg-blue-600 text-white'
                 : 'border-slate-300 bg-white text-ink hover:bg-slate-50',

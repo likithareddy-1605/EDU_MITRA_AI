@@ -88,7 +88,7 @@ export function AcademicsPage() {
     <div>
       <PageHeader title={t('academics.title')} subtitle={t('academics.subtitle')} />
 
-      <div className="grid grid-cols-2 gap-4 lg:grid-cols-3">
+      <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-3">
         <StatCard label={t('academics.cgpa')} value={cgpa.toFixed(2)} tone="blue" />
         <StatCard label={t('academics.semesters')} value={semesterGpas.length} tone="teal" />
         <StatCard label={t('academics.subjects')} value={subjectAverages.length} tone="green" />
@@ -200,13 +200,13 @@ export function AcademicsPage() {
         {records.length > 0 ? (
           <ul className="mt-4 divide-y divide-slate-100">
             {records.map((r) => (
-              <li key={r.id} className="flex items-center justify-between gap-3 py-2.5">
-                <div className="flex items-center gap-3">
+              <li key={r.id} className="flex flex-wrap items-center justify-between gap-2.5 py-3 sm:py-2.5">
+                <div className="flex items-center gap-2 sm:gap-3 min-w-0">
                   <Badge tone="neutral">Sem {r.semester}</Badge>
-                  <span className="text-sm font-medium text-ink">{r.subject}</span>
+                  <span className="text-sm font-medium text-ink break-words">{r.subject}</span>
                 </div>
-                <div className="flex items-center gap-3">
-                  <span className="text-sm text-ink-muted">{r.marks}/100</span>
+                <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+                  <span className="text-xs sm:text-sm text-ink-muted">{r.marks}/100</span>
                   <Badge tone="blue">{r.grade}</Badge>
                   <button
                     type="button"

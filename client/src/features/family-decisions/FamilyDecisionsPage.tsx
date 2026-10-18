@@ -30,7 +30,7 @@ import {
   ShieldCheck,
   Users,
 } from 'lucide-react'
-import { useDemoAuth } from '@/hooks/useDemoAuth'
+import { useAuth } from '@/hooks/useAuth'
 import { useLanguage } from '@/hooks/useLanguage'
 import { useStudentData } from '@/hooks/useStudentData'
 import { useFamilyDecision } from '@/hooks/useFamilyDecision'
@@ -572,7 +572,7 @@ function StepPreferences({
 // ---------------------------------------------------------------------------
 function StepRecord({ selectedIds }: { selectedIds: string[] }) {
   const { t } = useLanguage()
-  const { user } = useDemoAuth()
+  const { user } = useAuth()
   const { decision, updateDecision } = useFamilyDecision()
   const [saved, setSaved] = useState(!!decision.savedAt)
   const [editing, setEditing] = useState(!decision.savedAt)
@@ -796,6 +796,7 @@ function StepRecord({ selectedIds }: { selectedIds: string[] }) {
 // ---------------------------------------------------------------------------
 export function FamilyDecisionsPage() {
   const { t } = useLanguage()
+  const { user } = useAuth()
   const { data } = useStudentData()
   const { decision, updateDecision } = useFamilyDecision()
 
@@ -834,7 +835,15 @@ export function FamilyDecisionsPage() {
       <PageHeader
         title={t('decision.title')}
         subtitle={t('decision.subtitle')}
-        actions={<Badge tone="amber">{t('demo.label')}</Badge>}
+        actions={
+          user?.id.startsWith('demo-') ? (
+            <Badge tone="amber">{t('demo.label')}</Badge>
+          ) : (
+            <span className="inline-flex items-center gap-1 rounded-full bg-blue-50 px-2.5 py-1 text-xs font-semibold text-blue-700">
+              Collaborative Decision
+            </span>
+          )
+        }
       />
 
       {/* Privacy note */}

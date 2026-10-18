@@ -1,7 +1,12 @@
 import dotenv from 'dotenv'
+import path from 'path'
 
-// Load environment variables from server/.env (if present).
-dotenv.config()
+// Load root .env file across all working directory scenarios:
+dotenv.config({ path: path.resolve(process.cwd(), '.env') })
+dotenv.config({ path: path.resolve(process.cwd(), '../.env') })
+dotenv.config({ path: path.resolve(__dirname, '../../../.env') })
+dotenv.config({ path: path.resolve(__dirname, '../../../../.env') })
+dotenv.config() // also check default location
 
 export const env = {
   port: Number(process.env.PORT) || 4000,

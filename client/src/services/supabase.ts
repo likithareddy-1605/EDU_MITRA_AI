@@ -176,3 +176,100 @@ export async function fetchRemoteTasks(studentId: string): Promise<StudyTask[] |
     return null
   }
 }
+
+/** Saves student profile patch to Supabase student_profiles table */
+export async function saveRemoteProfile(userId: string, patch: Partial<StudentProfile>): Promise<boolean> {
+  if (!supabase) return false
+  try {
+    const payload: Record<string, unknown> = {
+      user_id: userId,
+      updated_at: new Date().toISOString(),
+    }
+    if (patch.branch !== undefined) payload.branch = patch.branch
+    if (patch.year !== undefined) payload.year = patch.year
+    if (patch.college !== undefined) payload.college = patch.college
+    if (patch.cgpa !== undefined) payload.cgpa = patch.cgpa
+    if (patch.academicInterests !== undefined) payload.academic_interests = patch.academicInterests
+    if (patch.careerInterests !== undefined) payload.career_interests = patch.careerInterests
+    if (patch.currentGoal !== undefined) payload.current_goal = patch.currentGoal
+    if (patch.preferredLearning !== undefined) payload.preferred_learning = patch.preferredLearning
+
+    const { error } = await supabase.from('student_profiles').upsert(payload)
+    return !error
+  } catch {
+    return false
+  }
+}
+
+/** Deletes a goal from Supabase */
+export async function deleteRemoteGoal(goalId: string): Promise<boolean> {
+  if (!supabase || goalId.startsWith('goal-') || goalId.startsWith('seed-')) return false
+  try {
+    const { error } = await supabase.from('goals').delete().eq('id', goalId)
+    return !error
+  } catch {
+    return false
+  }
+}
+
+/** Saves or updates a study task in Supabase */
+export async function saveRemoteTask(studentId: string, task: StudyTask): Promise<boolean> {
+  if (!supabase) return false
+  try {
+    const { error } = await supabase.from('study_tasks').upsert({
+      id: task.id.startsWith('task-') || task.id.startsWith('seed-') ? undefined : task.id,
+      student_id: studentId,
+      title: task.title,
+      subject: task.subject,
+      day: task.day,
+      priority: task.priority,
+      completed: task.completed,
+      completed_at: task.completedAt || null,
+      due: task.due || null,
+    })
+    return !error
+  } catch {
+    return false
+  }
+}
+
+/** Deletes a study task from Supabase */
+export async function deleteRemoteTask(taskId: string): Promise<boolean> {
+  if (!supabase || taskId.startsWith('task-') || taskId.startsWith('seed-')) return false
+  try {
+    const { error } = await supabase.from('study_tasks').delete().eq('id', taskId)
+    return !error
+  } catch {
+    return false
+  }
+}
+
+/** Saves or updates an academic record in Supabase */
+export async function saveRemoteAcademicRecord(studentId: string, record: AcademicRecord): Promise<boolean> {
+  if (!supabase) return false
+  try {
+    const { error } = await supabase.from('academic_records').upsert({
+      id: record.id.startsWith('rec-') || record.id.startsWith('seed-') ? undefined : record.id,
+      student_id: studentId,
+      semester: record.semester,
+      subject: record.subject,
+      marks: record.marks,
+      grade: record.grade,
+    })
+    return !error
+  } catch {
+    return false
+  }
+}
+
+/** Deletes an academic record from Supabase */
+export async function deleteRemoteAcademicRecord(recordId: string): Promise<boolean> {
+  if (!supabase || recordId.startsWith('rec-') || recordId.startsWith('seed-')) return false
+  try {
+    const { error } = await supabase.from('academic_records').delete().eq('id', recordId)
+    return !error
+  } catch {
+    return false
+  }
+}
+

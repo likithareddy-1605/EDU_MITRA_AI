@@ -1,13 +1,19 @@
-import { AlertTriangle } from 'lucide-react'
-import { useLanguage } from '@/hooks/useLanguage'
+﻿import { AlertTriangle } from 'lucide-react'
+import { useAuth } from '@/hooks/useAuth'
 
-/** Always-visible honesty banner: makes clear this is demo mode, not live data. */
+/**
+ * Only shown when explicitly browsing in offline demo mode.
+ * Completely hidden during real authenticated Supabase sessions.
+ */
 export function DemoBanner() {
-  const { t } = useLanguage()
+  const { isDemoMode } = useAuth()
+
+  if (!isDemoMode) return null
+
   return (
-    <div className="flex items-start gap-2 border-b border-amber-200 bg-amber-50 px-4 py-2 text-xs text-amber-800">
-      <AlertTriangle size={14} className="mt-0.5 shrink-0" aria-hidden />
-      <p>{t('demo.banner')}</p>
+    <div className="flex items-center gap-2 border-b border-amber-200 bg-amber-50 px-4 py-1.5 text-xs text-amber-800">
+      <AlertTriangle size={14} className="shrink-0" aria-hidden />
+      <p>Offline Demo Preview — Sign in to synchronize your profile and records with Supabase.</p>
     </div>
   )
 }

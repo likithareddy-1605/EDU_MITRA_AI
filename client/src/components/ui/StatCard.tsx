@@ -27,18 +27,18 @@ export function StatCard({
   tone?: StatTone
 }) {
   return (
-    <Card padding="md">
-      <div className="flex items-start justify-between gap-3">
-        <div className="min-w-0">
-          <p className="truncate text-sm font-medium text-ink-muted">{label}</p>
-          <p className="mt-1 text-2xl font-semibold text-ink">
+    <Card padding="sm" className="h-full">
+      <div className="flex items-start justify-between gap-2 sm:gap-3">
+        <div className="min-w-0 flex-1">
+          <p className="truncate text-xs sm:text-sm font-medium text-ink-muted">{label}</p>
+          <p className="mt-1 text-lg sm:text-2xl font-semibold text-ink truncate">
             {value}
-            {unit ? <span className="ml-1 text-sm font-normal text-ink-subtle">{unit}</span> : null}
+            {unit ? <span className="ml-1 text-xs sm:text-sm font-normal text-ink-subtle">{unit}</span> : null}
           </p>
-          {hint ? <p className="mt-1 text-xs text-ink-subtle">{hint}</p> : null}
+          {hint ? <p className="mt-1 truncate text-[11px] sm:text-xs text-ink-subtle">{hint}</p> : null}
         </div>
         {icon ? (
-          <span className={cn('flex h-10 w-10 shrink-0 items-center justify-center rounded-lg', iconWrap[tone])}>
+          <span className={cn('flex h-8 w-8 sm:h-10 sm:w-10 shrink-0 items-center justify-center rounded-lg', iconWrap[tone])}>
             {icon}
           </span>
         ) : null}

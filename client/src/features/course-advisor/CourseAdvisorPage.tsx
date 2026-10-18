@@ -601,7 +601,7 @@ export function CourseAdvisorPage() {
       <PageHeader
         title={t('courseAdvisor.heading')}
         subtitle={t('courseAdvisor.intro')}
-        actions={<Badge tone="amber">{t('demo.label')}</Badge>}
+        actions={<Badge tone="teal">Engineering Advisor</Badge>}
       />
 
       {/* Stepper */}

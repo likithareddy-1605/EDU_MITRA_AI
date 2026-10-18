@@ -147,11 +147,11 @@ export function CareerPage() {
       <PageHeader
         title={t('career.title')}
         subtitle={t('career.subtitle')}
-        actions={<Badge tone="amber">{t('demo.label')}</Badge>}
+        actions={<Badge tone="teal">Career Roadmap</Badge>}
       />
 
       {/* Stats */}
-      <div className="mb-6 grid grid-cols-2 gap-4 lg:grid-cols-3">
+      <div className="mb-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
         <StatCard label={t('career.placementReadiness')} value={`${readiness}%`} tone="blue" icon={<TrendingUp size={20} aria-hidden />} />
         <StatCard label={t('career.resumeChecklist')} value={`${resumeDone}/${resume.length}`} tone="green" icon={<ClipboardList size={20} aria-hidden />} />
         <StatCard label={t('career.explorer')} value={`${careers.length} Paths`} tone="teal" icon={<Briefcase size={20} aria-hidden />} />
@@ -365,9 +365,9 @@ export function CareerPage() {
           <Badge tone={resumeDone === resume.length ? 'green' : 'amber'}>{resumeDone}/{resume.length}</Badge>
         </div>
         <div className="mb-3"><ProgressBar value={resume.length ? (resumeDone / resume.length) * 100 : 0} tone="green" /></div>
-        <form onSubmit={addResume} noValidate className="mb-3 flex gap-2">
-          <Input value={newItem} onChange={(e) => setNewItem(e.target.value)} placeholder={t('career.addResumeItem')} aria-label={t('career.addResumeItem')} />
-          <Button type="submit" variant="outline"><Plus size={14} aria-hidden /> {t('common.add')}</Button>
+        <form onSubmit={addResume} noValidate className="mb-3 flex flex-col sm:flex-row gap-2">
+          <Input value={newItem} onChange={(e) => setNewItem(e.target.value)} placeholder={t('career.addResumeItem')} aria-label={t('career.addResumeItem')} className="flex-1" />
+          <Button type="submit" variant="outline" className="shrink-0"><Plus size={14} aria-hidden /> {t('common.add')}</Button>
         </form>
         <ul className="space-y-2">
           {resume.map((r) => (

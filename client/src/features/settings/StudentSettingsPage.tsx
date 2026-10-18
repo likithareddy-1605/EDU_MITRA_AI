@@ -1,13 +1,20 @@
-import { useState } from 'react'
-import { CheckCircle2, Globe, Monitor, Settings, Shield, UserCircle } from 'lucide-react'
+import { useState, useEffect, useCallback } from 'react'
+import { CheckCircle2, Globe, Monitor, RefreshCw, Settings, Shield, UserCircle, Users } from 'lucide-react'
+import { useAuth } from '@/hooks/useAuth'
 import { useLanguage } from '@/hooks/useLanguage'
 import { useStudentData } from '@/hooks/useStudentData'
+import { Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { Field } from '@/components/ui/Field'
 import { Input } from '@/components/ui/Input'
 import { PageHeader } from '@/components/ui/PageHeader'
 import { Select } from '@/components/ui/Select'
+import {
+  fetchStudentParentLinks,
+  respondStudentParentLink,
+  type StudentParentRequest,
+} from '@/services/parentStudentLink'
 import type { LanguageCode } from '@/types'
 
 type SettingsPrefs = {
@@ -31,6 +38,7 @@ function savePrefs(p: SettingsPrefs) {
 
 export function StudentSettingsPage() {
   const { t, lang, setLang } = useLanguage()
+  const { user, isDemoMode } = useAuth()
   const { data, updateProfile, resetDemo } = useStudentData()
   const { profile } = data
 
@@ -40,6 +48,28 @@ export function StudentSettingsPage() {
   const [branch, setBranch] = useState(profile.branch)
   const [year, setYear] = useState(profile.year)
   const [profileSaved, setProfileSaved] = useState(false)
+
+  // Parent links for real student account
+  const [parentLinks, setParentLinks] = useState<StudentParentRequest[]>([])
+  const [loadingLinks, setLoadingLinks] = useState(false)
+
+  const loadLinks = useCallback(async () => {
+    if (isDemoMode || !user?.id) return
+    setLoadingLinks(true)
+    const links = await fetchStudentParentLinks(user.id)
+    setParentLinks(links)
+    setLoadingLinks(false)
+  }, [isDemoMode, user?.id])
+
+  useEffect(() => {
+    loadLinks()
+  }, [loadLinks])
+
+  const handleLinkAction = async (linkId: string, action: 'approved' | 'revoked') => {
+    if (!user?.id) return
+    await respondStudentParentLink(user.id, linkId, action)
+    loadLinks()
+  }
 
   const [prefs, setPrefs] = useState<SettingsPrefs>(loadPrefs)
   const [prefsSaved, setPrefsSaved] = useState(false)
@@ -201,6 +231,89 @@ export function StudentSettingsPage() {
             </div>
           </div>
         </Card>
+
+        {/* Parent & Family Access (Real Student Account Only) */}
+        {!isDemoMode && user?.role === 'student' && (
+          <Card>
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-2">
+                <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-teal-50 text-teal-700">
+                  <Users size={18} aria-hidden />
+                </span>
+                <h2 className="text-base font-semibold text-ink">Parent Access & Permissions</h2>
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={loadLinks}
+                disabled={loadingLinks}
+                className="gap-1.5"
+              >
+                <RefreshCw size={13} className={loadingLinks ? 'animate-spin' : ''} />
+                Refresh
+              </Button>
+            </div>
+
+            <p className="mb-4 text-xs text-ink-muted">
+              Parents can only see your academic progress and goals that you mark as shared once you approve their request.
+            </p>
+
+            {parentLinks.length === 0 ? (
+              <p className="text-xs text-ink-subtle">No parent accounts currently linked or requesting access.</p>
+            ) : (
+              <div className="space-y-3">
+                {parentLinks.map((link) => (
+                  <div
+                    key={link.id}
+                    className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-3 rounded-lg border border-slate-200 bg-slate-50/50"
+                  >
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm font-semibold text-ink">{link.parentName}</span>
+                        <Badge tone={link.status === 'approved' ? 'green' : link.status === 'pending' ? 'amber' : 'neutral'}>
+                          {link.status.toUpperCase()}
+                        </Badge>
+                      </div>
+                      <p className="text-xs text-ink-muted">{link.parentEmail}</p>
+                    </div>
+
+                    <div className="flex items-center gap-2 shrink-0">
+                      {link.status === 'pending' && (
+                        <Button
+                          size="sm"
+                          onClick={() => handleLinkAction(link.id, 'approved')}
+                          className="bg-emerald-600 text-white hover:bg-emerald-700"
+                        >
+                          Approve
+                        </Button>
+                      )}
+                      {link.status === 'approved' && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleLinkAction(link.id, 'revoked')}
+                          className="border-red-200 text-red-600 hover:bg-red-50"
+                        >
+                          Revoke Access
+                        </Button>
+                      )}
+                      {link.status === 'revoked' && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleLinkAction(link.id, 'approved')}
+                          className="border-emerald-200 text-emerald-700 hover:bg-emerald-50"
+                        >
+                          Re-approve
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </Card>
+        )}
 
         {/* Data Management */}
         <Card>

@@ -9,6 +9,49 @@ export interface AppUser {
   id: string
   role: UserRole
   displayName: string
+  email?: string
+  onboardingCompleted?: boolean
+  educationStage?: EngineeringEducationStage
+}
+
+export type EngineeringEducationStage = 'planning' | 'studying'
+
+export interface StudentPlanningOnboardingData {
+  stage: 'planning'
+  currentQualification: string
+  preferredBranches: string[]
+  entranceExam?: string
+  entranceScoreOrRank?: string
+  expectedBudget?: string
+  preferredLocation?: string
+  careerGoals: string[]
+  academicInterests: string[]
+  dailyStudyHours?: number
+}
+
+export interface StudentStudyingOnboardingData {
+  stage: 'studying'
+  college: string
+  branch: string
+  year: string
+  semester: string
+  cgpa: number
+  strongSubjects: string[]
+  weakSubjects: string[]
+  careerGoals: string[]
+  dailyStudyHours?: number
+  preferredLearning?: string
+}
+
+export type StudentOnboardingData = StudentPlanningOnboardingData | StudentStudyingOnboardingData
+
+export interface ParentOnboardingData {
+  relationship: string
+  studentName: string
+  studentEmail?: string
+  studentStage?: EngineeringEducationStage
+  communicationPreference: string
+  supportPriorities: string[]
 }
 
 export type GoalCategory =
@@ -79,10 +122,13 @@ export interface StudentProfile {
   displayName: string
   branch: string
   year: string
+  semester?: string
   college: string
   cgpa: number
   academicInterests: string[]
   careerInterests: string[]
+  strongSubjects?: string[]
+  weakSubjects?: string[]
   currentGoal: string
   preferredLearning: string
 }

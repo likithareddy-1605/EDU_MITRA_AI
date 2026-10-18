@@ -7,9 +7,9 @@ interface CardProps extends HTMLAttributes<HTMLDivElement> {
 }
 
 const padMap = {
-  sm: 'p-4',
-  md: 'p-5',
-  lg: 'p-6',
+  sm: 'p-3 sm:p-4',
+  md: 'p-3.5 sm:p-5',
+  lg: 'p-4 sm:p-6',
 } as const
 
 /** A white surface card with a subtle border and shadow. */

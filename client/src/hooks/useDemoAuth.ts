@@ -1,8 +1,14 @@
-import { useContext } from 'react'
-import { DemoAuthContext } from '@/contexts/DemoAuthContext'
+﻿import { useAuth } from './useAuth'
+import type { UserRole } from '@/types'
 
 export function useDemoAuth() {
-  const ctx = useContext(DemoAuthContext)
-  if (!ctx) throw new Error('useDemoAuth must be used within a DemoAuthProvider')
-  return ctx
+  const auth = useAuth()
+  return {
+    user: auth.user,
+    isDemoMode: auth.isDemoMode,
+    signInAs: (role: UserRole) => auth.signInAsDemo(role),
+    signOut: () => {
+      auth.signOut().catch(() => {})
+    },
+  }
 }

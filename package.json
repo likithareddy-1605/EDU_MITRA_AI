@@ -1,0 +1,24 @@
+{
+  "name": "edumitra-ai",
+  "version": "1.0.0",
+  "private": true,
+  "description": "EduMitra AI - Family Decision-Support Platform for Engineering Education",
+  "scripts": {
+    "dev:client": "npm --prefix client run dev",
+    "dev:server": "npm --prefix server run dev",
+    "build:client": "npm --prefix client run build",
+    "build:server": "npm --prefix server run build",
+    "build": "npm --prefix client run build"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.21.2"
+  },
+  "devDependencies": {
+    "@types/cors": "^2.8.17",
+    "@types/express": "^4.17.21",
+    "@types/node": "^24.13.3",
+    "typescript": "^5.6.3"
+  }
+}

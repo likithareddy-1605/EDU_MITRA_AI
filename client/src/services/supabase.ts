@@ -1,13 +1,26 @@
 import { createClient, type SupabaseClient, type User } from '@supabase/supabase-js'
 import type { AcademicRecord, Goal, StudentProfile, StudyTask } from '@/types'
 
-// Retrieve Supabase environment variables
-const supabaseUrl = (import.meta.env.VITE_SUPABASE_URL as string | undefined)?.trim() || ''
+function normalizeSupabaseUrl(url: string | undefined): string {
+  if (!url) return ''
+  const cleaned = url.trim().replace(/^["']|["']$/g, '').trim()
+  try {
+    const parsed = new URL(cleaned)
+    return parsed.origin
+  } catch {
+    return cleaned.replace(/\/rest\/v1\/?$/, '').replace(/\/auth\/v1\/?$/, '').replace(/\/$/, '')
+  }
+}
+
+// Retrieve Supabase environment variables and normalize to root project URL
+const rawSupabaseUrl = (import.meta.env.VITE_SUPABASE_URL as string | undefined)?.trim() || ''
 const supabasePublishableKey = (
-  (import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY as string | undefined)?.trim() ||
-  (import.meta.env.VITE_SUPABASE_ANON_KEY as string | undefined)?.trim() ||
+  (import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY as string | undefined)?.trim()?.replace(/^["']|["']$/g, '') ||
+  (import.meta.env.VITE_SUPABASE_ANON_KEY as string | undefined)?.trim()?.replace(/^["']|["']$/g, '') ||
   ''
 )
+
+export const supabaseUrl: string = normalizeSupabaseUrl(rawSupabaseUrl)
 
 // Check if credentials are real and not placeholder defaults
 function isValidConfig(url: string, key: string): boolean {

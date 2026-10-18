@@ -13,6 +13,17 @@ function cleanEnv(val: string | undefined): string {
   return val.trim().replace(/^["']|["']$/g, '').trim()
 }
 
+function normalizeSupabaseUrl(url: string | undefined): string {
+  const cleaned = cleanEnv(url)
+  if (!cleaned) return ''
+  try {
+    const parsed = new URL(cleaned)
+    return parsed.origin
+  } catch {
+    return cleaned.replace(/\/rest\/v1\/?$/, '').replace(/\/auth\/v1\/?$/, '').replace(/\/$/, '')
+  }
+}
+
 export const env = {
   port: Number(process.env.PORT) || 4000,
   nodeEnv: process.env.NODE_ENV || 'development',
@@ -23,7 +34,7 @@ export const env = {
   // labelled deterministic fallback rather than failing.
   geminiApiKey: cleanEnv(process.env.GEMINI_API_KEY),
   // Supabase service credentials are OPTIONAL until Milestone 2.
-  supabaseUrl: cleanEnv(process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL).replace(/\/$/, ''),
+  supabaseUrl: normalizeSupabaseUrl(process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL),
   supabaseServiceKey: cleanEnv(
     process.env.SUPABASE_SERVICE_ROLE_KEY ||
       process.env.SUPABASE_SERVICE_KEY ||

@@ -46,9 +46,16 @@ export async function createConfirmedUser(params: SignUpParams): Promise<AuthUse
     }),
   })
 
-  const userData = await res.json()
+  const userData = await res.json().catch(() => ({}))
   if (!res.ok) {
-    const msg = userData.msg || userData.error_description || userData.error || 'Failed to create user'
+    const msg =
+      userData.message ||
+      userData.msg ||
+      userData.error_description ||
+      userData.error ||
+      (userData.hint ? `${userData.message || 'Auth error'}: ${userData.hint}` : '') ||
+      'Failed to create user'
+    console.error('[auth.service] Admin user creation failed:', res.status, msg)
     throw new Error(msg)
   }
 

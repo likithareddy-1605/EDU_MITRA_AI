@@ -220,42 +220,92 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       displayName: string,
     ): Promise<{ success: boolean; error?: string }> => {
       setLoading(true)
+      const normalizedEmail = email.trim().toLowerCase()
+      const trimmedName = displayName.trim()
+
       try {
-        const res = await fetch(`${API_BASE}/auth/signup`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            email: email.trim().toLowerCase(),
-            password,
-            role,
-            displayName: displayName.trim(),
-          }),
-        })
+        let backendError: string | null = null
 
-        const resData = await res.json()
-        if (!res.ok) {
-          setLoading(false)
-          return { success: false, error: resData.error || 'Signup failed' }
-        }
-
-        if (supabase) {
-          const loginResult = await supabase.auth.signInWithPassword({
-            email: email.trim().toLowerCase(),
-            password,
+        // 1. First attempt auto-confirmed registration via backend Admin API
+        try {
+          const res = await fetch(`${API_BASE}/auth/signup`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              email: normalizedEmail,
+              password,
+              role,
+              displayName: trimmedName,
+            }),
           })
 
-          if (loginResult.data.session) {
-            setSession(loginResult.data.session)
-            const verifiedUser = await loadVerifiedProfile(loginResult.data.session)
+          const resData = await res.json().catch(() => ({}))
+          if (res.ok) {
+            // User created and auto-confirmed! Sign in immediately:
+            if (supabase) {
+              const loginResult = await supabase.auth.signInWithPassword({
+                email: normalizedEmail,
+                password,
+              })
+
+              if (loginResult.data.session) {
+                setSession(loginResult.data.session)
+                const verifiedUser = await loadVerifiedProfile(loginResult.data.session)
+                setUser(verifiedUser)
+                setIsDemoMode(false)
+                setLoading(false)
+                return { success: true }
+              }
+            }
+            setLoading(false)
+            return { success: true }
+          } else {
+            backendError = resData.error || 'Backend registration failed'
+          }
+        } catch (fetchErr: unknown) {
+          backendError = fetchErr instanceof Error ? fetchErr.message : 'Backend unreachable'
+        }
+
+        // 2. Resilient fallback: If backend admin call fails (e.g. invalid service_role key),
+        // try standard client-side Supabase Auth registration using the public anon key.
+        if (supabase) {
+          console.warn('[AuthContext] Backend admin registration failed, trying direct Supabase Auth:', backendError)
+          const { data: clientData, error: clientError } = await supabase.auth.signUp({
+            email: normalizedEmail,
+            password,
+            options: {
+              data: {
+                role,
+                display_name: trimmedName,
+                onboarding_completed: false,
+              },
+            },
+          })
+
+          if (clientError) {
+            setLoading(false)
+            return { success: false, error: clientError.message || backendError || 'Registration failed' }
+          }
+
+          if (clientData.session) {
+            setSession(clientData.session)
+            const verifiedUser = await loadVerifiedProfile(clientData.session)
             setUser(verifiedUser)
             setIsDemoMode(false)
             setLoading(false)
             return { success: true }
+          } else if (clientData.user) {
+            // User created, confirmation email sent if SMTP enabled
+            setLoading(false)
+            return {
+              success: true,
+              error: 'Account created! Please check your email to confirm registration or sign in.',
+            }
           }
         }
 
         setLoading(false)
-        return { success: true }
+        return { success: false, error: backendError || 'Signup failed' }
       } catch (err: unknown) {
         setLoading(false)
         const msg = err instanceof Error ? err.message : 'Signup failed'

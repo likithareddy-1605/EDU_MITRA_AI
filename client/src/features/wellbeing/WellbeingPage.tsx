@@ -143,11 +143,12 @@ export function WellbeingPage() {
   const [completed, setCompleted] = useState(false)
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
 
-  useEffect(() => {
-    setTimeLeft(TIMER_MODES[modeIdx].seconds)
+  const switchMode = (idx: number) => {
+    setModeIdx(idx)
+    setTimeLeft(TIMER_MODES[idx].seconds)
     setRunning(false)
     setCompleted(false)
-  }, [modeIdx])
+  }
 
   useEffect(() => {
     if (running) {
@@ -226,7 +227,7 @@ export function WellbeingPage() {
               <button
                 key={m.label}
                 type="button"
-                onClick={() => setModeIdx(i)}
+                onClick={() => switchMode(i)}
                 className={cn(
                   'rounded-lg border px-3 py-1.5 text-xs font-medium transition-colors',
                   modeIdx === i ? 'border-blue-400 bg-blue-50 text-blue-700' : 'border-line bg-white text-ink-muted hover:bg-slate-50'

@@ -16,6 +16,15 @@ import type {
   StudyTask,
 } from '@/types'
 import { seedStudentData } from '@/data/seedData'
+import {
+  isSupabaseClientConfigured,
+  supabase,
+  fetchRemoteProfile,
+  fetchRemoteAcademicRecords,
+  fetchRemoteGoals,
+  fetchRemoteTasks,
+  saveRemoteGoal,
+} from '@/services/supabase'
 
 const STORAGE_KEY = 'edumitra.studentData'
 
@@ -80,6 +89,7 @@ export const StudentDataContext = createContext<StudentDataApi | undefined>(unde
 export function StudentDataProvider({ children }: { children: ReactNode }) {
   const [data, setData] = useState<StudentData>(load)
 
+  // Save to local storage whenever data changes
   useEffect(() => {
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(data))
@@ -87,6 +97,35 @@ export function StudentDataProvider({ children }: { children: ReactNode }) {
       /* storage full or blocked */
     }
   }, [data])
+
+  // Remote fetch from Supabase when client is configured and session exists
+  useEffect(() => {
+    if (!isSupabaseClientConfigured || !supabase) return
+
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (!session?.user) return
+      const userId = session.user.id
+
+      Promise.all([
+        fetchRemoteProfile(userId),
+        fetchRemoteAcademicRecords(userId),
+        fetchRemoteGoals(userId, false),
+        fetchRemoteTasks(userId),
+      ])
+        .then(([remProfile, remRecords, remGoals, remTasks]) => {
+          setData((prev) => ({
+            ...prev,
+            profile: remProfile ? { ...prev.profile, ...remProfile } : prev.profile,
+            records: remRecords && remRecords.length > 0 ? remRecords : prev.records,
+            goals: remGoals && remGoals.length > 0 ? remGoals : prev.goals,
+            tasks: remTasks && remTasks.length > 0 ? remTasks : prev.tasks,
+          }))
+        })
+        .catch(() => {
+          /* fail gracefully to local demo data */
+        })
+    })
+  }, [])
 
   const updateProfile = useCallback(
     (patch: Partial<StudentProfile>) => setData((d) => ({ ...d, profile: { ...d.profile, ...patch } })),
@@ -109,7 +148,18 @@ export function StudentDataProvider({ children }: { children: ReactNode }) {
   )
 
   const addGoal = useCallback(
-    (goal: Omit<Goal, 'id'>) => setData((d) => ({ ...d, goals: [...d.goals, { ...goal, id: uid('goal') }] })),
+    (goal: Omit<Goal, 'id'>) => {
+      const newGoal: Goal = { ...goal, id: uid('goal') }
+      setData((d) => ({ ...d, goals: [...d.goals, newGoal] }))
+
+      if (isSupabaseClientConfigured && supabase) {
+        supabase.auth.getSession().then(({ data: { session } }) => {
+          if (session?.user?.id) {
+            saveRemoteGoal(session.user.id, newGoal).catch(() => {})
+          }
+        })
+      }
+    },
     [],
   )
   const updateGoal = useCallback(
